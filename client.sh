@@ -1,6 +1,6 @@
 #!/bin/bash
 FILE=$1
-SERVER="localhost"
+SERVER=192.168.0.103
 PORT=3000
 
 # Datei senden

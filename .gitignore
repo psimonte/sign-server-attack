@@ -1,0 +1,6 @@
+private/
+boot/
+rootfs/
+*.bin
+*.sig
+*.sig2

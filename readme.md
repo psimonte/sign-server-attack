@@ -39,15 +39,23 @@ Sobald die microSD-Karte vorbereitet ist, kann der Raspberry Pi in Betrieb genom
 
 ## 3. Konfiguaration
 
-Bei der erstmaligen Inbetriebnahme des Raspberry Pi muss eine grundlegende Konfiguration vorgenommen werden. Der Benutzer wählt in diesem Schritt das gewünschte Tastaturlayout und richtet ein Benutzerkonto mit Passwort ein. In früheren Versionen des Betriebssystem-Images war standardmäßig der Benutzername pi mit dem Passwort raspberry voreingestellt. Um diesen Zustand nachzustellen, werden im Rahmen der Konfiguration identische Zugangsdaten verwendet.
+Bei der erstmaligen Inbetriebnahme des Raspberry Pi muss eine grundlegende Konfiguration vorgenommen werden. Der Benutzer wählt in diesem Schritt das gewünschte Tastaturlayout und richtet ein Benutzerkonto mit Passwort ein. In früheren Versionen des Betriebssystem-Images war standardmäßig der Benutzername **pi** mit dem Passwort **raspberry** voreingestellt. Um diesen Zustand nachzustellen, werden im Rahmen der Konfiguration identische Zugangsdaten verwendet.
 
 Im Anschluss erfolgt der Login in die Shell. Um den SSH-Dienst zu aktivieren, wird die Datei /boot/firmware/ssh erstellt. In der Standardkonfiguration des SSH-Servers ist ein Login mit diesen bekannten Standard-Zugangsdaten möglich. Dies ermöglicht es einem Angreifer, sich unbefugt Zugriff auf das System zu verschaffen und im weiteren Verlauf den privaten Schlüssel des Sign-Servers zu entwenden – ein schwerwiegender Sicherheitsvorfall, der in einem realen Produktionsumfeld erhebliche Konsequenzen nach sich ziehen könnte, etwa die vollständige Kompromittierung der Software-Lieferkette.
 
 ```shell
 $ sudo touch /boot/firmware/ssh
 ```
-
 Für ein derart sicherheitskritisches Einsatzszenario wäre es zwingend erforderlich gewesen, den Passwort-Login über SSH zu deaktivieren und ausschließlich Authentifizierungen über zuvor hinterlegte Public Keys zuzulassen.
+
+Um eine fundierte forensische Analyse zu ermöglichen, ist es notwendig, die Standardkonfiguration des System-Loggings anzupassen. In der Voreinstellung werden SSH-Login-Versuche lediglich flüchtig im Arbeitsspeicher protokolliert. Das bedeutet, dass sämtliche Einträge nach einem Neustart verloren gehen.
+
+Damit die Logeinträge dauerhaft gespeichert werden, muss die Konfigurationsdatei
+`/etc/systemd/journald.conf` angepasst werden. Hierzu wird der Parameter:
+```ini
+Storage=persistent
+```
+gesetzt. Dadurch speichert das System alle Logdaten dauerhaft im Verzeichnis `/var/log/journal`, sodass sie auch nach einem Neustart erhalten bleiben und für eine spätere Analyse zur Verfügung stehen.
 
 ## 4. Anwendung
 

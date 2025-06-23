@@ -161,13 +161,17 @@ Das Ziel des Angreifers besteht darin, den Private Key des Systems zu entwenden,
 
 Der Angriff verläuft in mehreren Schritten:
 
-**1. Physischer Zugriff:** Der Angreifer schafft es unbemerkt, einen USB-Stick in den Raspberry Pi einzustecken.
-**2. Exfiltration des Schlüssels:** Der USB-Stick dient als Mittel zur Datenexfiltration – insbesondere des Private Keys.
-**3. Remote-Zugriff via SSH:** Aufgrund des Headless-Betriebs erfolgt die Interaktion mit dem System über eine SSH-Verbindung. Der Angreifer nutzt hierfür Standard-Zugangsdaten, um sich Zugriff zum System zu verschaffen.
-**4. Dateizugriff und Manipulation:** 
+- **1. Physischer Zugriff:** Der Angreifer schafft es unbemerkt, einen USB-Stick in den Raspberry Pi einzustecken.
+
+- **2. Exfiltration des Schlüssels:** Der USB-Stick dient als Mittel zur Datenexfiltration – insbesondere des Private Keys.
+
+- **3. Remote-Zugriff via SSH:** Aufgrund des Headless-Betriebs erfolgt die Interaktion mit dem System über eine SSH-Verbindung. Der Angreifer nutzt hierfür Standard-Zugangsdaten, um sich Zugriff zum System zu verschaffen.
+
+- **4. Dateizugriff und Manipulation:** 
     -   Der eingesteckte USB-Stick wird gemountet.
     -   Der Private Key wird ausgelesen, auf den Stick kopiert und auf dem System überschrieben.
-**5. Spurenbeseitigung:** Anschließend entfernt der Angreifer den USB-Stick wieder und verschiebt den entwendeten Schlüssel auf seinen eigenen Computer zur weiteren Nutzung.
+
+- **5. Spurenbeseitigung:** Anschließend entfernt der Angreifer den USB-Stick wieder und verschiebt den entwendeten Schlüssel auf seinen eigenen Computer zur weiteren Nutzung.
 
 ```shell
 # SSH Login

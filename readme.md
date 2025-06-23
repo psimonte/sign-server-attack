@@ -193,7 +193,7 @@ $ mv /media/lutz/LUTZ/sign-server.pem /home/lutz/
 $ ls -lisa /media/lutz/LUTZ
 insgesamt 8
        1 4 drwxr-xr-x  2 lutz lutz 4096 Jan  1  1970 .
-79429634 4 drwxr-x---+ 3 root root 4096 Jun 23 10:50 ..
+79429634 4 drwxr-x---+ 3 root root 4096 Jun 24 12:50 ..
 ```
 
 ## 6. Analyse

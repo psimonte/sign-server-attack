@@ -195,4 +195,43 @@ insgesamt 8
 ## 6. Analyse
 
 
+Nachdem ein Sicherheitsvorfall entdeckt wurde, ist eine strukturierte forensische Analyse erforderlich, um das Angriffsgeschehen nachvollziehen und gerichtsfest dokumentieren zu können. In diesem exemplarischen Fall steht ein interner Mitarbeiter unter Verdacht, einen USB-Stick zur Exfiltration eines privaten Schlüssels verwendet zu haben.
 
+Als erster Schritt ist es essenziell, eine unveränderte Sicherung (Master-Image) der MicroSD-Karte des Raspberry Pi sowie des USB-Sticks anzufertigen. Dies verhindert eine Veränderung des Originalzustands und dient der Beweissicherung. Zur Erstellung der Rohdaten-Images wird das Linux-Tool dd verwendet. Zusätzlich werden SHA256-Hashes zur Integritätsprüfung berechnet und dokumentiert.
+
+```shell
+# Image von SD Karte ziehen
+$ sudo dd if=/dev/sda of=sd-card.img bs=1M status=progress
+# Dokumentieren der SHA256 Checksumme
+$ sha256sum sd-card.img
+231e8f1e662554e27fba39e81c06a72b4a9e9bafe533240b8c47c48c8a7a7465  sd-card.img
+#
+# Image von USB Stick ziehen
+$ sudo dd if=/dev/sdb of=usb-stick.img bs=1M status=progress
+# Dokumentieren der SHA256 Checksumme
+$ sha256sum usb-stick.img
+290e743f415a706e638cb7f1b245784e5cc73ce39a809fc2230ec0e5e1d60b56  usb-stick.img
+```
+
+Die erstellten Images können auf unterschiedliche Spuren untersucht werden
+
+- **Zeitstempel:** Dateisysteme speichern Zeitstempel für Zugriff, Modifikation und Erstellung von Dateien. Diese Metadaten liefern Hinweise darauf, wann der Private Key verändert oder kopiert wurde.
+
+- **SSH Login:** Der SSH-Dienst (*sshd*) protokolliert alle Anmeldeversuche. Die Logdaten befinden sich in */var/log/journal/*. Über *journalctl* können gezielt Anmeldungen von unbekannten oder neuen IP-Adressen identifiziert werden. Auffälligkeiten wie häufige oder zeitlich ungewöhnliche Logins sollten dokumentiert werden.
+
+- **Sign-Server:** Die Signaturanwendung schreibt ebenfalls Logfiles (über *systemd*). Besonders relevant ist der Neustart des Dienstes bei einem ungültigen Private Key, der ein starkes Indiz für eine Manipulation sein kann.
+
+- **Kernel-Logs:** Das Ein- und Ausstecken von USB-Geräten erzeugt Kernel-Meldungen, die von *systemd* aufgezeichnet werden. Diese lassen sich über *journalctl -k* oder *dmesg* einsehen. Darüber kann der USB-Stick, inklusive Seriennummer und Gerätetyp, nachvollzogen werden.
+
+- **Korrelation:** Ein zentraler Bestandteil der Analyse ist die Korrelation aller relevanten Ereignisse über ihre Zeitstempel:
+    - Zeitpunkt des SSH-Zugriffs
+    - USB-Geräteeinbindung
+    - Zugriff auf den Private Key
+    - Neustart des Signaturdienstes
+
+    Diese zeitliche Verknüpfung ermöglicht eine präzise Rekonstruktion des Angriffsablaufs.
+
+- **USB Stick:** Auch wenn der USB-Stick auf den ersten Blick leer erscheint, können mit forensischen Tools gelöschte Dateien oder Dateisystemreste außerhalb der aktiven Strukturen analysiert werden. 
+
+Für die weitergehende Analyse der Images stehen verschiedene Ansätze zur Verfügung. Die einfachste Methode besteht darin, die erstellten Images per dd auf baugleiche Datenträger zurückzuschreiben. Anschließend kann mit typischen Linux-Bordmitteln wie *journalctl*, *ls*, *stat* oder *grep* eine manuelle forensische Live-Analyse erfolgen.
+Fortgeschrittene Forensik-Tools wie z. B. *Magnet AXIOM*, *Autopsy* oder *FTK-Imager* bieten eine grafische Analyseumgebung. Sie können Rohdaten-Images direkt importieren, Dateisysteme indizieren, Zeitachsen generieren, Gelöschte Dateien wiederherstellen, Logs automatisiert durchsuchen etc. Ein wichtiger Punkt hierbei: Systemd-Logfiles liegen nicht im Klartext vor, sondern im binären Journal-Format. Das Forensik-Tool muss daher in der Lage sein, .journal-Dateien zu lesen und auszuwerten.
